@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import Comment from '../presentation/Comment'
+import { APIManager } from '../../utils'
 
 class Comments extends Component {
   constructor(){
@@ -9,20 +10,38 @@ class Comments extends Component {
       comment: {
         username: '',
         body: '',
-        timestamp: ''
       },
       list: []
     }
   }
 
+  componentDidMount() {
+    APIManager.get('/api/comment', null, (err, res) => {
+      if(err){
+        alert('ERROR: ' + err.message)
+        return
+      }
+
+      this.setState({
+        list: res.result
+      })
+    })
+  }
+
   submit_comment(){
     let comment = Object.assign({}, this.state.comment)
-    comment['timestamp'] = new Date().getHours() + ':' + new Date().getMinutes()
 
-    let comments = Object.assign([], this.state.list)
-    comments.push(comment)
-    this.setState({
-      list: comments
+    APIManager.post('/api/comment', comment, (err, res) => {
+      if(err){
+        alert('ERROR: ' + err.message)
+        return
+      }
+
+      let comments = Object.assign([], this.state.list)
+      comments.push(res.result)
+      this.setState({
+        list: comments
+      })
     })
   }
 

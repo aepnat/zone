@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import Zone from '../presentation/Zone'
-import superagent from 'superagent'
+import { APIManager } from '../../utils'
 
 class Zones extends Component {
   constructor(){
@@ -16,18 +16,14 @@ class Zones extends Component {
   }
 
   componentDidMount(){
-    superagent
-    .get('/api/zone')
-    .query(null)
-    .set('Accept', 'application/json')
-    .end((err, res) => {
+    APIManager.get('/api/zone', null, (err, res) => {
       if(err){
-        alert('ERROR: ' + err)
+        alert('ERROR: ' + err.message)
         return
       }
 
       this.setState({
-        list: res.body.result
+        list: res.result
       })
     })
   }
@@ -43,15 +39,24 @@ class Zones extends Component {
   submit(){
     let zone = Object.assign({}, this.state.zone)
 
-    let list = Object.assign([], this.state.list)
-    list.push(zone)
-    this.setState({
-      zone: {
-        name: '',
-        zipcodes: '',
-        num_comment: '0'
-      },
-      list: list
+    APIManager.post('/api/zone', zone, (err, res) => {
+      if(err){
+        alert('Error Submit: ' + err)
+        return
+      }
+
+      let new_zone = res.result
+
+      let list = Object.assign([], this.state.list)
+      list.push(new_zone)
+      this.setState({
+        zone: {
+          name: '',
+          zipcodes: '',
+          num_comments: '0'
+        },
+        list: list
+      })
     })
   }
 

@@ -22516,9 +22516,7 @@ var _Zone = __webpack_require__(193);
 
 var _Zone2 = _interopRequireDefault(_Zone);
 
-var _superagent = __webpack_require__(195);
-
-var _superagent2 = _interopRequireDefault(_superagent);
+var _utils = __webpack_require__(201);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -22552,14 +22550,14 @@ var Zones = function (_Component) {
     value: function componentDidMount() {
       var _this2 = this;
 
-      _superagent2.default.get('/api/zone').query(null).set('Accept', 'application/json').end(function (err, res) {
+      _utils.APIManager.get('/api/zone', null, function (err, res) {
         if (err) {
-          alert('ERROR: ' + err);
+          alert('ERROR: ' + err.message);
           return;
         }
 
         _this2.setState({
-          list: res.body.result
+          list: res.result
         });
       });
     }
@@ -22575,17 +22573,28 @@ var Zones = function (_Component) {
   }, {
     key: 'submit',
     value: function submit() {
+      var _this3 = this;
+
       var zone = Object.assign({}, this.state.zone);
 
-      var list = Object.assign([], this.state.list);
-      list.push(zone);
-      this.setState({
-        zone: {
-          name: '',
-          zipcodes: '',
-          num_comment: '0'
-        },
-        list: list
+      _utils.APIManager.post('/api/zone', zone, function (err, res) {
+        if (err) {
+          alert('Error Submit: ' + err);
+          return;
+        }
+
+        var new_zone = res.result;
+
+        var list = Object.assign([], _this3.state.list);
+        list.push(new_zone);
+        _this3.setState({
+          zone: {
+            name: '',
+            zipcodes: '',
+            num_comments: '0'
+          },
+          list: list
+        });
       });
     }
   }, {
@@ -22648,6 +22657,8 @@ var _Comment = __webpack_require__(192);
 
 var _Comment2 = _interopRequireDefault(_Comment);
 
+var _utils = __webpack_require__(201);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -22667,8 +22678,7 @@ var Comments = function (_Component) {
     _this.state = {
       comment: {
         username: '',
-        body: '',
-        timestamp: ''
+        body: ''
       },
       list: []
     };
@@ -22676,15 +22686,39 @@ var Comments = function (_Component) {
   }
 
   _createClass(Comments, [{
+    key: 'componentDidMount',
+    value: function componentDidMount() {
+      var _this2 = this;
+
+      _utils.APIManager.get('/api/comment', null, function (err, res) {
+        if (err) {
+          alert('ERROR: ' + err.message);
+          return;
+        }
+
+        _this2.setState({
+          list: res.result
+        });
+      });
+    }
+  }, {
     key: 'submit_comment',
     value: function submit_comment() {
-      var comment = Object.assign({}, this.state.comment);
-      comment['timestamp'] = new Date().getHours() + ':' + new Date().getMinutes();
+      var _this3 = this;
 
-      var comments = Object.assign([], this.state.list);
-      comments.push(comment);
-      this.setState({
-        list: comments
+      var comment = Object.assign({}, this.state.comment);
+
+      _utils.APIManager.post('/api/comment', comment, function (err, res) {
+        if (err) {
+          alert('ERROR: ' + err.message);
+          return;
+        }
+
+        var comments = Object.assign([], _this3.state.list);
+        comments.push(res.result);
+        _this3.setState({
+          list: comments
+        });
       });
     }
   }, {
@@ -22863,6 +22897,9 @@ var Zone = function (_Component) {
   _createClass(Zone, [{
     key: "render",
     value: function render() {
+
+      var zones = this.props.currentZone.zipcodes.join(", ");
+
       return _react2.default.createElement(
         "div",
         { className: "zone_container" },
@@ -22878,7 +22915,7 @@ var Zone = function (_Component) {
         _react2.default.createElement(
           "span",
           null,
-          this.props.currentZone.zipcodes
+          zones
         ),
         _react2.default.createElement("br", null),
         _react2.default.createElement(
@@ -24862,6 +24899,85 @@ module.exports = function shouldRetry(err, res) {
   return false;
 };
 
+
+/***/ }),
+/* 201 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.APIManager = undefined;
+
+var _APIManager = __webpack_require__(202);
+
+var _APIManager2 = _interopRequireDefault(_APIManager);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.APIManager = _APIManager2.default;
+
+/***/ }),
+/* 202 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _superagent = __webpack_require__(195);
+
+var _superagent2 = _interopRequireDefault(_superagent);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+exports.default = {
+
+  get: function get(url, params, callback) {
+    _superagent2.default.get(url).query(params).set('Accept', 'application/json').end(function (err, res) {
+      if (err) {
+        callback(err, null);
+        return;
+      }
+
+      var confirmation = res.body.confirmation;
+      if (confirmation !== 'success') {
+        callback({ message: res.body.messsage }, null);
+        return;
+      }
+
+      callback(null, res.body);
+    });
+  },
+
+  post: function post(url, body, callback) {
+    _superagent2.default.post(url).send(body).set('Accept', 'application/json').end(function (err, res) {
+      if (err) {
+        callback(err, null);
+        return;
+      }
+
+      var confirmation = res.body.confirmation;
+      if (confirmation !== 'success') {
+        callback({ message: res.body.messsage }, null);
+        return;
+      }
+
+      callback(null, res.body);
+    });
+  },
+
+  put: function put() {},
+
+  delete: function _delete() {}
+
+};
 
 /***/ })
 /******/ ]);
