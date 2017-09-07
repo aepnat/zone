@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ title }}</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1>Create Zone</h1>
+
+    <form method="post" action="/api/zone">
+      <input type="text" name="name" placeholder="Name zones..." />
+      <input type="text" name="zipcodes" placeholder="Zip code, separate with comma" />
+      <input type="submit" value="submit" />
+    </form>
+  </body>
+</html>
