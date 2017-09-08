@@ -1,3 +1,7 @@
+body{
+  margin:20px 0;
+}
+
 ul {
   list-style: none;
   margin:0;
@@ -8,43 +12,6 @@ input{
   margin-bottom:10px;
 }
 
-.zone_container,
-.comments_container ul,
-.form-container{
-  padding:15px;
-  background:#f9f9f9;
-  margin-top:12px;
-  border:1px solid #ccc;
-}
-
-.zone_container h2{
-  margin-top:0;
-  padding-top:0;
-}
-
-.zone_container a{
-  text-decoration: none;
-}
-
-.comments_container{
-  margin-top:20px;
-}
-
-.comment_container {
-  border-bottom:1px solid #ccc;
-  margin-bottom:20px;
-  padding-bottom:10px;
-}
-
-.comment_container span{
-  font-size:80%;
-}
-
-.comment_container .body{
-  font-size:130%;
-  font-weight:700;
-}
-
-.comment_container .username{
-  text-transform: capitalize;
+a.selected{
+  color:#fff;
 }

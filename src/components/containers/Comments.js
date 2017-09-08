@@ -1,22 +1,21 @@
 import React, { Component } from 'react'
-import Comment from '../presentation/Comment'
+import { Comment, CreateComment } from '../presentation/index'
 import { APIManager } from '../../utils'
+import actions from '../../actions'
+import { connect } from 'react-redux'
 
 class Comments extends Component {
   constructor(){
     super()
 
     this.state = {
-      comment: {
-        username: '',
-        body: '',
-      },
+      zone: {},
       list: []
     }
   }
 
-  componentDidMount() {
-    APIManager.get('/api/comment', null, (err, res) => {
+  getDataFromServer(id, callback) {
+    APIManager.get(`/api/zone/${id}/comment`, null, (err, res) => {
       if(err){
         alert('ERROR: ' + err.message)
         return
@@ -25,11 +24,13 @@ class Comments extends Component {
       this.setState({
         list: res.result
       })
+
+      callback()
     })
   }
 
-  submit_comment(){
-    let comment = Object.assign({}, this.state.comment)
+  submit_comment(comment){
+    comment['zone_id'] = this.state.zone._id
 
     APIManager.post('/api/comment', comment, (err, res) => {
       if(err){
@@ -45,22 +46,14 @@ class Comments extends Component {
     })
   }
 
-  update_username(e) {
-    let update_comment = Object.assign({}, this.state.comment)
-    update_comment['username'] = e.target.value
-
-    this.setState({
-      comment: update_comment
-    })
-  }
-
-  update_body(e) {
-    let update_comment = Object.assign({}, this.state.comment)
-    update_comment['body'] = e.target.value
-
-    this.setState({
-      comment: update_comment
-    })
+  componentWillReceiveProps(props){
+    if(props.zone.selected_zone){
+      this.getDataFromServer(props.zone.selected_zone._id, () => {
+        this.setState({
+          zone: props.zone.selected_zone
+        })
+      })
+    }
   }
 
   render() {
@@ -72,19 +65,23 @@ class Comments extends Component {
 
     return(
       <div className="comments_container">
-        <h2>Comments: Zone 1</h2>
+        <h2>Comments: {(this.state.zone.name) ? this.state.zone.name : ''}</h2>
         <ul>
           {commentList}
         </ul>
 
-        <div className="form-container">
-          <input onChange={this.update_username.bind(this)} className="form-control" type="text" placeholder="Username" />
-          <input onChange={this.update_body.bind(this)} className="form-control" type="text" placeholder="Comment" />
-          <button onClick={this.submit_comment.bind(this)} className="btn btn-info">Submit Comment</button>
-        </div>
+        <CreateComment onCreate={this.submit_comment.bind(this)} />
+
       </div>
     )
   }
 }
 
-export default Comments
+const stateToProps = (state) => {
+  return {
+    zone: state.zone
+  }
+}
+
+
+export default connect(stateToProps, null)(Comments)

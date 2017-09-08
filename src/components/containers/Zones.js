@@ -1,16 +1,14 @@
 import React, { Component } from 'react'
-import Zone from '../presentation/Zone'
+import { Zone, CreateZone } from '../presentation/index'
 import { APIManager } from '../../utils'
+import actions from '../../actions'
+import { connect } from 'react-redux'
 
 class Zones extends Component {
   constructor(){
     super()
     this.state = {
-      zone: {
-        name: '',
-        zipcodes: '',
-        num_comments: '0'
-      },
+      selected: null,
       list: []
     }
   }
@@ -28,17 +26,7 @@ class Zones extends Component {
     })
   }
 
-  update_zone(e) {
-    let zone = Object.assign({}, this.state.zone);
-    zone[e.target.id] = e.target.value
-    this.setState({
-      zone: zone
-    })
-  }
-
-  submit(){
-    let zone = Object.assign({}, this.state.zone)
-
+  submit(zone){
     APIManager.post('/api/zone', zone, (err, res) => {
       if(err){
         alert('Error Submit: ' + err)
@@ -60,27 +48,47 @@ class Zones extends Component {
     })
   }
 
+  select_zone(index, zone) {
+    this.setState({
+      selected: index
+    })
+    this.props.select_zone(zone)
+  }
+
   render() {
     const listItems = this.state.list.map((zone, i) => {
+      let selected = (i==this.state.selected)
+      let isActive = (selected) ? 'active' : ''
+
       return (
-        <li key={zone._id}><Zone currentZone={zone} /></li>
+        <li className={"list-group-item " + isActive} key={zone._id}><Zone index={i} select={this.select_zone.bind(this)} isSelected={selected} currentZone={zone} /></li>
       )
     })
 
     return(
       <div>
-        <ul>
-          {listItems}
-        </ul>
-
-        <div className="form-container">
-          <input id="name" onChange={this.update_zone.bind(this)} value={this.state.zone.name} className="form-control" type="text" placeholder="Name" />
-          <input id="zipcodes" onChange={this.update_zone.bind(this)} value={this.state.zone.zipcodes} className="form-control" type="text" placeholder="Zip Codes" />
-          <button onClick={this.submit.bind(this)} className="btn btn-danger">Add Zone</button>
+        <div className="card">
+          <ul className="list-group list-group-flush">
+            {listItems}
+          </ul>
         </div>
+
+        <CreateZone onCreate={this.submit.bind(this)} />
       </div>
     )
   }
 }
 
-export default Zones
+const stateToProps = (state) => {
+  return {
+    zone: state.zone
+  }
+}
+
+const dispatchToProps = (dispatch) => {
+  return {
+    select_zone: (zone) => dispatch(actions.select_zone(zone))
+  }
+}
+
+export default connect(stateToProps, dispatchToProps)(Zones)
