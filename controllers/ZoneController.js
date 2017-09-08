@@ -1,4 +1,5 @@
 var Zone = require('../models/Zone')
+var Comment = require('../models/Comment')
 
 module.exports = {
 
@@ -21,6 +22,17 @@ module.exports = {
       }
 
       callback(null, zone)
+    })
+  },
+
+  findCommentById: function(id, callback){
+    Comment.find({zone_id: id}, function(err, comments){
+      if(err){
+        callback(err, null)
+        return
+      }
+
+      callback(null, comments)
     })
   },
 

@@ -64,6 +64,38 @@ router.post('/:resource', function(req, res){
 
 })
 
+router.get('/:resource/:id/comment', function(req, res){
+  var resource = req.params.resource
+  var id = req.params.id
+  var controller = controllers[resource]
+
+  if(controller == null){
+    res.json({
+      confirmation: 'failed',
+      message: 'Resource not found'
+    })
+
+    return
+  }
+
+  controller.findCommentById(id, function(err, zone){
+    if(err){
+      res.json({
+        confirmation: 'failed',
+        message: 'not found'
+      })
+
+      return
+    }
+
+    res.json({
+      confirmation: 'success',
+      result: zone
+    })
+
+  })
+})
+
 router.get('/:resource/:id', function(req, res){
 
   var resource = req.params.resource
